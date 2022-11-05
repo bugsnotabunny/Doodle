@@ -1,5 +1,8 @@
 {
   "version": "2.0.0",
   "command": "make",
+  "args": [
+    "-j8"
+  ],
   "problemMatcher":"$gcc"
 }
