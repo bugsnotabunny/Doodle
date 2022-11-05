@@ -6,18 +6,18 @@ ddl::Event::Event() noexcept:
   subscribers_()
 {}
 
-ddl::Event::Event(const std::initializer_list< SubT > subs) noexcept:
+ddl::Event::Event(const std::initializer_list< std::function< void() > >& subs):
   subscribers_(subs)
 {}
 
-void ddl::Event::subscribe(const SubT subscriber)
+void ddl::Event::subscribe(const std::function< void() > subscriber)
 {
   subscribers_.push_back(std::move(subscriber));
 }
 
-void ddl::Event::unsubscribe(const SubT subscriber) noexcept
+void ddl::Event::unsubscribe() noexcept
 {
-  subscribers_.erase(std::find(subscribers_.begin(), subscribers_.end(), subscriber));
+  subscribers_.pop_back();
 }
 
 void ddl::Event::shrink() noexcept

@@ -8,78 +8,93 @@
 
 #include "Event.hpp"
 #include "Player.hpp"
-
-ddl::Game::Game(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame):
-  updatesFrequency_(1 / static_cast< float >(wishedFPS * updatesPerFrame)),
-  updatesPerFrame_(updatesPerFrame),
-  window_(window),
-  updatables_(),
-  renderables_(),
-  clock_()
-{
-  updatables_.push_back(std::make_shared< IUpdatable >(clock_));
-}
+#include "GameClock.hpp"
 
 namespace
 {
-  using ddl::IRenderable;
-  void iterThroughRenderables(std::deque< IRenderable& >& deq, sf::Window& window)
+  class iterThroughRenderables
   {
-    for (auto it = deq.begin(); it != deq.end(); ++it)
-    {
-      obj.render(window);
-    }
-  }
+  public:
+    iterThroughRenderables(ddl::GameData::Renderables& storage, sf::RenderWindow& window):
+      storage_(storage),
+      window_(window)
+    {}
 
-  using ddl::IUpdatable;
-  void iterThroughUpdatables(std::deque< IUpdatable >& deq)
-  {
-    for (auto&& obj: deq)
+    void operator()()
     {
-      obj.update();
+      for(auto&& item: storage_)
+      {
+        item.lock()->render(window_);
+      }
     }
+  private:
+    ddl::GameData::Renderables& storage_;
+    sf::RenderWindow& window_;
+  };
+
+  class iterThroughUpdatables
+  {
+  public:
+    iterThroughUpdatables(ddl::GameData::Updatables& storage):
+      storage_(storage)
+    {}
+
+    void operator()()
+    {
+      for(auto&& item: storage_)
+      {
+        item.lock()->update();
+      }
+    }
+  private:
+    ddl::GameData::Updatables& storage_;
+  };
+
+  const std::string assetsFolder = "bin/assets";
+
+  sf::Texture inputTexture(const std::string& source)
+  {
+    const char* const TEXTURES_ERR = "Texture was not imported correctly";
+
+    sf::Texture result;
+    result.setSmooth(true);
+    if(!result.loadFromFile(assetsFolder + source))
+    {
+      throw std::ios_base::failure(TEXTURES_ERR);
+    }
+    return result;
   }
 }
 
-void ddl::Game::run()
+void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame)
 {
-  const char* const GAME_ASSETS_ERR = "Some of game assets was not imported correctly";
+  GameData data;
 
-  sf::Texture platformTexture;
-  sf::Texture doodlerTexture;
+  sf::Texture doodlerTexture = inputTexture("bin/assets/sprites/doodler.png");
+  sf::Texture platformTexture = inputTexture("bin/assets/sprites/platform.png");
 
-  doodlerTexture.setSmooth(true);
-  platformTexture.setSmooth(true);
-
-  if(!doodlerTexture.loadFromFile("bin/assets/sprites/doodler.png"))
-  {
-    throw std::ios_base::failure(GAME_ASSETS_ERR);
-  }
-
-  if(!platformTexture.loadFromFile("bin/assets/sprites/platform.png"))
-  {
-    throw std::ios_base::failure(GAME_ASSETS_ERR);
-  }
-
-  std::shared_ptr< Player > doodler = instantiate(Player{sf::Sprite{doodlerTexture}});
+  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{doodlerTexture}});
   doodler->setScale(0.5, 0.5);
   doodler->setPosition(100, 100);
 
-  Event frame;
-  Event update;
-  frame.subscribe(std::bind(iterThroughRenderables, std::ref(renderables_), std::ref(window_)));
-  update.subscribe(std::bind(iterThroughUpdatables, std::ref(updatables_)));
+  const float updatesFrequency = 1 / static_cast< float >(wishedFPS * updatesPerFrame);
 
+  Event frame;
+  frame.subscribe(iterThroughRenderables{data.renderables, window});
+  Event update;
+  update.subscribe(iterThroughUpdatables{data.updatables});
+
+  std::shared_ptr< GameClock > clock = data.instantiate(GameClock{});
   unsigned short updatesCount = 0;
-  while(window_.isOpen())
+  while(window.isOpen())
   {
     sf::Event event;
-    while (window_.pollEvent(event))
+    while (window.pollEvent(event))
     {
       if ((event.type == sf::Event::Closed) ||
         ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
       {
-        window_.close();
+        window.close();
         break;
       }
 
@@ -88,11 +103,11 @@ void ddl::Game::run()
       }
     }
 
-    if(clock_.getTimeFromUpdate().asSeconds() > updatesFrequency_)
+    if(clock->getTimeFromUpdate().asSeconds() > updatesFrequency)
     {
       update.invoke();
       ++updatesCount;
-      if (updatesCount == updatesPerFrame_)
+      if (updatesCount == updatesPerFrame)
       {
         frame.invoke();
         updatesCount = 0;

@@ -17,9 +17,9 @@ namespace ddl
 
     virtual void update();
 
-    virtual void modifySpeed(const sf::Vector2f & acceleration);
+    // virtual void modifySpeed(const sf::Vector2f & acceleration);
 
-    virtual void modifyAcceleration(const sf::Vector2f & acceleration);
+    // virtual void modifyAcceleration(const sf::Vector2f & acceleration);
   private:
     void jump();
     sf::Vector2f speed_;

@@ -9,23 +9,21 @@ namespace ddl
   class Event
   {
   public:
-    using SubT = std::function< void() >;
-    using StorageT = std::vector< SubT >;
+    using StorageT = std::vector< std::function< void() > >;
 
     Event() noexcept;
-    Event(const Event &) = default;
+    Event(const Event&) = default;
     Event(Event&&) noexcept = default;
-    Event(const std::initializer_list< SubT > subs);
+    Event(const std::initializer_list< std::function< void() > >& subs);
     ~Event() = default;
 
-    void subscribe(const SubT subscriber);
-    void unsubscribe(const SubT subscriber) noexcept;
+    void subscribe(std::function< void() > subscriber);
+    void unsubscribe() noexcept;
     void shrink() noexcept;
 
     void invoke();
 
     const StorageT& getSubs() const noexcept;
-
   private:
     StorageT subscribers_;
   };

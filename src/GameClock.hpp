@@ -1,5 +1,5 @@
-#ifndef GAME_CLOCK_H
-#define GAME_CLOCK_H
+#ifndef GAME_CLOCK_HPP
+#define GAME_CLOCK_HPP
 
 #include <SFML/System.hpp>
 
@@ -7,7 +7,7 @@
 
 namespace ddl
 {
-  class GameClock: IUpdatable
+  class GameClock: public IUpdatable
   {
   public:
     GameClock();
@@ -15,8 +15,8 @@ namespace ddl
     sf::Time getTimeFromUpdate();
     void update() override;
   private:
-    sf::Clock fromLastUpdate_;
     sf::Clock fromLaunch_;
+    sf::Clock fromLastUpdate_;
   };
 }
 

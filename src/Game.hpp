@@ -8,40 +8,39 @@
 
 #include "IRenderable.hpp"
 #include "IUpdatable.hpp"
-#include "GameClock.hpp"
 
 namespace ddl
 {
-  class Game
+  struct GameData
   {
-  public:
-    Game(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame);
-    ~Game() = default;
-    void run();
   private:
+    template< typename T >
+    using Storage = std::vector< T >;
+  public:
     template< typename T >
     std::shared_ptr< T > instantiate(T&& object);
 
-    float updatesFrequency_;
-    unsigned short updatesPerFrame_;
-    sf::Window& window_;
-    std::deque< std::shared_ptr< IUpdatable > > updatables_;
-    std::deque< std::shared_ptr< IRenderable > > renderables_;
-    GameClock clock_;
+    using Renderables = Storage< std::weak_ptr< IRenderable > >;
+    using Updatables = Storage< std::weak_ptr< IUpdatable > >;
+
+    Updatables updatables;
+    Renderables renderables;
   };
+
+  void run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame);
 }
 
 template< typename T>
-std::shared_ptr< T > ddl::Game::instantiate(T&& object)
+std::shared_ptr< T > ddl::GameData::instantiate(T&& object)
 {
   auto result = std::make_shared< T >(object);
-  if (std::is_base_of< IRenderable, T >::value)
+  if constexpr(std::is_base_of< IRenderable, T >::value)
   {
-    renderables_.push_front(*result);
+    renderables.push_back(result);
   }
-  if (std::is_base_of< IUpdatable, T >::value)
+  if constexpr(std::is_base_of< IUpdatable, T >::value)
   {
-    updatables_.push_front(*result);
+    updatables.push_back(result);
   }
   return result;
 }

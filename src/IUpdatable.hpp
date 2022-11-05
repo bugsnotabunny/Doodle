@@ -1,10 +1,6 @@
 #ifndef I_UPDATABLE_HPP
 #define I_UPDATABLE_HPP
 
-#include <memory>
-
-#include "Game.hpp"
-
 namespace ddl
 {
   class IUpdatable
