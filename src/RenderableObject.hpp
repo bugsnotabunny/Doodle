@@ -17,8 +17,6 @@ namespace ddl
 
     virtual void update() = 0;
     virtual void render(sf::RenderWindow & window) const override;
-  private:
-    sf::Sprite sprite_;
   };
 }
 

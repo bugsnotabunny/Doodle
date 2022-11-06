@@ -1,10 +1,10 @@
 #include "RenderableObject.hpp"
 
 ddl::RenderableObject::RenderableObject(sf::Sprite && sprite):
-  sprite_(sprite)
+  sf::Sprite(sprite)
 {}
 
 void ddl::RenderableObject::render(sf::RenderWindow & window) const
 {
-  window.draw(sprite_);
+  window.draw(*this);
 }
