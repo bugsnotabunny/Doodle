@@ -11,6 +11,9 @@
 
 namespace ddl
 {
+  const unsigned gameHeight = 768;
+  const unsigned gameWidth = gameHeight / 3 * 2;
+
   void run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame);
 }
 

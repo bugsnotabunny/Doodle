@@ -1,5 +1,6 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
+
+#include <SFML/Graphics.hpp>
 
 #include "Game.hpp"
 
@@ -7,12 +8,8 @@ int main()
 {
   try
   {
-    const unsigned gameHeight = 768;
-    const unsigned gameWidth = gameHeight / 3 * 2;
-
     sf::RenderWindow window{};
-    window.create(sf::VideoMode(gameWidth, gameHeight, 32), "Doodle Jump (not really)", sf::Style::Titlebar | sf::Style::Close);
-
+    window.create(sf::VideoMode(ddl::gameWidth, ddl::gameHeight, 32), "Doodle Jump (not really)", sf::Style::Titlebar | sf::Style::Close);
     ddl::run(window, 60, 1);
   }
   catch (const std::exception & e)
