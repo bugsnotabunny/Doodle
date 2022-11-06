@@ -3,12 +3,15 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <iostream>
-#include <functional>
 #include <type_traits>
+#include <map>
+#include <functional>
 
 #include "Event.hpp"
 #include "Player.hpp"
 #include "GameClock.hpp"
+#include "GameData.hpp"
+#include "GlobalConstants.hpp"
 
 namespace
 {
@@ -49,35 +52,17 @@ namespace
   private:
     ddl::GameData::Updatables& storage_;
   };
-
-  const std::string assetsFolder = "bin/assets";
-
-  sf::Texture inputTexture(const std::string& source)
-  {
-    const char* const TEXTURES_ERR = "Texture was not imported correctly";
-
-    sf::Texture result;
-    result.setSmooth(true);
-    if(!result.loadFromFile(assetsFolder + source))
-    {
-      throw std::ios_base::failure(TEXTURES_ERR);
-    }
-    return result;
-  }
 }
 
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame)
 {
   GameData data;
+  GameTextures textures = loadTextures();
 
-  sf::Texture doodlerTexture = inputTexture("bin/assets/sprites/doodler.png");
-  sf::Texture platformTexture = inputTexture("bin/assets/sprites/platform.png");
-
-  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{doodlerTexture}});
+  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{textures.doodler}});
   doodler->setScale(0.5, 0.5);
   doodler->setPosition(100, 100);
-
-  const float updatesFrequency = 1 / static_cast< float >(wishedFPS * updatesPerFrame);
+  doodler->move(200, 100);
 
   Event frame;
   frame.subscribe(iterThroughRenderables{data.renderables, window});
@@ -85,31 +70,70 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
   update.subscribe(iterThroughUpdatables{data.updatables});
 
   std::shared_ptr< GameClock > clock = data.instantiate(GameClock{});
+
+  using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
+  std::shared_ptr< AccelerationT > lrPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, 0}});
+  std::shared_ptr< AccelerationT > gravityPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, gravity}});
+  bool accelerateLeft = false;
+  bool accelerateRight = false;
+
   unsigned short updatesCount = 0;
   while(window.isOpen())
   {
     sf::Event event;
     while (window.pollEvent(event))
     {
-      if ((event.type == sf::Event::Closed) ||
-        ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape)))
+      // ! redo with std::map later maybe
+      switch (event.type)
       {
+      case sf::Event::Closed:
         window.close();
         break;
-      }
-
-      if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Left))
-      {
+      case sf::Event::KeyPressed:
+        switch (event.key.code)
+        {
+        case sf::Keyboard::Left:
+          accelerateLeft = true;
+          break;
+        case sf::Keyboard::Right:
+          accelerateRight = true;
+          break;
+        default:
+          break;
+        }
+        break;
+      case sf::Event::KeyReleased:
+        switch (event.key.code)
+        {
+        case sf::Keyboard::Left:
+          accelerateLeft = false;
+          break;
+        case sf::Keyboard::Right:
+          accelerateRight = false;
+          break;
+        default:
+          break;
+        }
+      default:
+        break;
       }
     }
 
+    const float updatesFrequency = 1 / static_cast< float >(wishedFPS * updatesPerFrame);
     if(clock->getTimeFromUpdate().asSeconds() > updatesFrequency)
     {
+      lrPlayerAcceleration->acceleration.x = 5 * (static_cast< char >(accelerateRight) - accelerateLeft);
       update.invoke();
       ++updatesCount;
+      if (doodler->getPosition().y > 400)
+      {
+        doodler->jump();
+      }
       if (updatesCount == updatesPerFrame)
       {
+        window.clear();
         frame.invoke();
+        window.display();
         updatesCount = 0;
       }
     }
