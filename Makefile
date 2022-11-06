@@ -13,7 +13,7 @@ $(ODIR)/%.o: $(SDIR)/%.cpp
 .PHONY: all
 
 all: $(patsubst $(SDIR)/%.cpp,$(ODIR)/%.o,$(_OBJS))
-	$(CC) $(CXXFLAGS) -o $(ODIR)/main.exe $(ODIR)/*.o $(LIBS)
+	$(CC) $(CXXFLAGS) -o main.exe $(ODIR)/*.o $(LIBS)
 
 clean:
-	rm -f $(ODIR)/*.o $(ODIR)/*.exe
+	rm -f $(ODIR)/*.o $main.exe

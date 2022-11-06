@@ -54,6 +54,14 @@
     "compare": "cpp",
     "concepts": "cpp",
     "numbers": "cpp",
-    "cinttypes": "cpp"
-  }
+    "cinttypes": "cpp",
+    "ranges": "cpp"
+  },
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/banan/doodle",
+      "binaryPath": "/home/banan/doodle/main.exe",
+      "binaryArgs": []
+    }
+  ]
 }
