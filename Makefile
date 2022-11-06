@@ -16,4 +16,4 @@ all: $(patsubst $(SDIR)/%.cpp,$(ODIR)/%.o,$(_OBJS))
 	$(CC) $(CXXFLAGS) -o main.exe $(ODIR)/*.o $(LIBS)
 
 clean:
-	rm -f $(ODIR)/*.o $main.exe
+	rm -f $(ODIR)/*.o main.exe
