@@ -17,8 +17,12 @@ namespace ddl
     Event(const std::initializer_list< std::function< void() > >& subs);
     ~Event() = default;
 
+    Event& operator=(const Event&) = default;
+    Event& operator=(Event&&) = default;
+
     void subscribe(std::function< void() > subscriber);
     void unsubscribe() noexcept;
+
     void shrink() noexcept;
 
     void invoke();
