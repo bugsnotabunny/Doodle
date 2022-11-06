@@ -8,7 +8,7 @@
 
 namespace ddl
 {
-  class RenderableObject : public IUpdatable, public IRenderable, public sf::Sprite
+  class RenderableObject : public IRenderable, public sf::Sprite
   {
   public:
     RenderableObject(sf::Sprite&& sprite);

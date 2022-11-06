@@ -9,7 +9,7 @@
 
 namespace ddl
 {
-  class Player: public RenderableObject
+  class Player: public RenderableObject, public IUpdatable
   {
     using Base = RenderableObject;
   public:
