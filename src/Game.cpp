@@ -7,51 +7,13 @@
 #include <map>
 #include <functional>
 
-#include "Event.hpp"
 #include "Player.hpp"
-#include "GameClock.hpp"
 #include "GameData.hpp"
-#include "GlobalConstants.hpp"
 
 namespace
 {
-  class iterThroughRenderables
-  {
-  public:
-    iterThroughRenderables(ddl::GameData::Renderables& storage, sf::RenderWindow& window):
-      storage_(storage),
-      window_(window)
-    {}
-
-    void operator()()
-    {
-      for(auto&& item: storage_)
-      {
-        item.lock()->render(window_);
-      }
-    }
-  private:
-    ddl::GameData::Renderables& storage_;
-    sf::RenderWindow& window_;
-  };
-
-  class iterThroughUpdatables
-  {
-  public:
-    iterThroughUpdatables(ddl::GameData::Updatables& storage):
-      storage_(storage)
-    {}
-
-    void operator()()
-    {
-      for(auto&& item: storage_)
-      {
-        item.lock()->update();
-      }
-    }
-  private:
-    ddl::GameData::Updatables& storage_;
-  };
+  const sf::Vector2f gravity = {0, 1000};
+  const float horizontalAccelerationBase = 1000;
 }
 
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame)
@@ -64,20 +26,13 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
   doodler->setPosition(100, 100);
   doodler->move(200, 100);
 
-  Event frame;
-  frame.subscribe(iterThroughRenderables{data.renderables, window});
-  Event update;
-  update.subscribe(iterThroughUpdatables{data.updatables});
-
-  std::shared_ptr< GameClock > clock = data.instantiate(GameClock{});
-
   using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
   std::shared_ptr< AccelerationT > lrPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, 0}});
-  std::shared_ptr< AccelerationT > gravityPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, gravity}});
+  std::shared_ptr< AccelerationT > gravityPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, gravity});
   bool accelerateLeft = false;
   bool accelerateRight = false;
 
-  unsigned short updatesCount = 0;
+  sf::Clock updateClock;
   while(window.isOpen())
   {
     sf::Event event;
@@ -120,22 +75,27 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
     }
 
     const float updatesFrequency = 1 / static_cast< float >(wishedFPS * updatesPerFrame);
-    if(clock->getTimeFromUpdate().asSeconds() > updatesFrequency)
+    const float deltaTime = updateClock.getElapsedTime().asSeconds();
+    if(deltaTime > updatesFrequency)
     {
-      lrPlayerAcceleration->acceleration.x = 5 * (static_cast< char >(accelerateRight) - accelerateLeft);
-      update.invoke();
-      ++updatesCount;
+      lrPlayerAcceleration->acceleration.x = horizontalAccelerationBase * (static_cast< char >(accelerateRight) - accelerateLeft);
+      for(auto&& item: data.updatables)
+      {
+        item.lock()->update(deltaTime);
+      }
+
       if (doodler->getPosition().y > 400)
       {
         doodler->jump();
       }
-      if (updatesCount == updatesPerFrame)
+
+      window.clear();
+      for(auto&& item: data.renderables)
       {
-        window.clear();
-        frame.invoke();
-        window.display();
-        updatesCount = 0;
+        item.lock()->render(window);
       }
+      window.display();
+      updateClock.restart();
     }
   }
 }

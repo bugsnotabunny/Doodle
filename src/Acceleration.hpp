@@ -19,7 +19,7 @@ namespace ddl
 
     const SpeedT& getSpeed() const noexcept;
 
-    virtual void update() override;
+    virtual void update(float deltaTime) override;
     AccelerationT acceleration;
   private:
     SpeedT& speed_;
@@ -33,9 +33,9 @@ ddl::Acceleration< SpeedT, AccelerationT >::Acceleration(SpeedT& speedref, const
 {}
 
 template < typename SpeedT, typename AccelerationT >
-void ddl::Acceleration< SpeedT, AccelerationT >::update()
+void ddl::Acceleration< SpeedT, AccelerationT >::update(float deltaTime)
 {
-  speed_ += acceleration;
+  speed_ += acceleration * deltaTime;
 }
 
 template < typename SpeedT, typename AccelerationT >

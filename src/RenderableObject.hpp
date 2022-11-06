@@ -15,7 +15,6 @@ namespace ddl
     RenderableObject(const RenderableObject & object) = default;
     virtual ~RenderableObject() = default;
 
-    virtual void update() = 0;
     virtual void render(sf::RenderWindow & window) const override;
   };
 }

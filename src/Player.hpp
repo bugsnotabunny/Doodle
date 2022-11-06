@@ -16,7 +16,7 @@ namespace ddl
     Player(sf::Sprite&& sprite);
     virtual ~Player() = default;
 
-    virtual void update();
+    virtual void update(float deltaTime) override;
     void jump() noexcept;
 
     LimitedVector< float > speed;

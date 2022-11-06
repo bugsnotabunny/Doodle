@@ -5,8 +5,8 @@
 
 namespace
 {
-  const sf::Vector2f playerSpeedLimit = {20, 82};
-  const sf::Vector2f jumpSpeed = {0, -200};
+  const sf::Vector2f playerSpeedLimit = {5000, 10000};
+  const sf::Vector2f jumpSpeed = {0, -900};
 }
 
 ddl::Player::Player(sf::Sprite&& sprite):
@@ -14,12 +14,13 @@ ddl::Player::Player(sf::Sprite&& sprite):
   speed({0, 0}, playerSpeedLimit)
 {}
 
-void ddl::Player::update()
+void ddl::Player::update(float deltaTime)
 {
-  Base::move(speed.getVec());
+  auto diff = speed.getVec() * deltaTime;
+  Base::move(diff);
 }
 
 void ddl::Player::jump() noexcept
 {
-  speed += jumpSpeed;
+  speed.setVec(jumpSpeed);
 }
