@@ -9,6 +9,7 @@
 
 #include "Player.hpp"
 #include "GameData.hpp"
+#include "PlatformsPool.hpp"
 
 namespace
 {
@@ -19,6 +20,7 @@ namespace
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame)
 {
   GameData data;
+  PlatformsPool platforms{data};
   GameTextures textures = loadTextures();
 
   std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{textures.doodler}});
@@ -84,9 +86,10 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
         item.lock()->update(deltaTime);
       }
 
-      if (doodler->getPosition().y > 400)
+      if (platforms.anyIntersections(*doodler))
       {
         doodler->jump();
+        platforms.shiftPlatforms(doodler->getPosition().y);
       }
 
       window.clear();
@@ -95,6 +98,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
         item.lock()->render(window);
       }
       window.display();
+
       updateClock.restart();
     }
   }
