@@ -7,18 +7,42 @@
 
 namespace ddl
 {
-  const float gravity = 10;
-
-  class Acceleration: IUpdatable
+  template < typename SpeedT, typename AccelerationT >
+  class Acceleration: public IUpdatable
   {
   public:
-    Acceleration(sf::Vector2f& speedref, const sf::Vector2f& acceleration);
-    ~Acceleration() = default;
-    void update() override;
-    sf::Vector2f acceleration;
+    Acceleration(SpeedT& speedref, const AccelerationT& acceleration);
+    Acceleration(const Acceleration&) = default;
+    Acceleration(Acceleration&&) = default;
+
+    Acceleration& operator=(const Acceleration&) = default;
+
+    const SpeedT& getSpeed() const noexcept;
+
+    virtual void update() override;
+    AccelerationT acceleration;
   private:
-    sf::Vector2f& speed_;
+    SpeedT& speed_;
   };
 }
+
+template < typename SpeedT, typename AccelerationT >
+ddl::Acceleration< SpeedT, AccelerationT >::Acceleration(SpeedT& speedref, const AccelerationT& acceleration):
+  acceleration(acceleration),
+  speed_(speedref)
+{}
+
+template < typename SpeedT, typename AccelerationT >
+void ddl::Acceleration< SpeedT, AccelerationT >::update()
+{
+  speed_ += acceleration;
+}
+
+template < typename SpeedT, typename AccelerationT >
+const SpeedT& ddl::Acceleration< SpeedT, AccelerationT >::getSpeed() const noexcept
+{
+  return speed_;
+}
+
 
 #endif
