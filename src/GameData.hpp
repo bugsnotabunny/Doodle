@@ -2,6 +2,7 @@
 #define GAME_DATA_HPP
 
 #include <memory>
+#include <forward_list>
 
 #include "IRenderable.hpp"
 #include "IUpdatable.hpp"
@@ -12,7 +13,7 @@ namespace ddl
   {
   private:
     template< typename T >
-    using Storage = std::vector< T >;
+    using Storage = std::forward_list< T >;
   public:
     template< typename T >
     std::shared_ptr< T > instantiate(T&& object);
@@ -39,11 +40,11 @@ std::shared_ptr< T > ddl::GameData::instantiate(T&& object)
   auto result = std::make_shared< T >(object);
   if constexpr(std::is_base_of< IRenderable, T >::value)
   {
-    renderables.push_back(result);
+    renderables.push_front(result);
   }
   if constexpr(std::is_base_of< IUpdatable, T >::value)
   {
-    updatables.push_back(result);
+    updatables.push_front(result);
   }
   return result;
 }
