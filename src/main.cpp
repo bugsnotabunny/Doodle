@@ -10,15 +10,10 @@ int main()
     const unsigned gameHeight = 768;
     const unsigned gameWidth = gameHeight / 3 * 2;
 
-    sf::RenderWindow window;
-    window.setActive(false);
-    std::string test("Hello World!");
-    window.setTitle(test);
+    sf::RenderWindow window{};
+    window.create(sf::VideoMode(gameWidth, gameHeight, 32), "Doodle Jump (not really)", sf::Style::Titlebar | sf::Style::Close);
 
-    // sf::RenderWindow window{};
-    // window.create(sf::VideoMode(gameWidth, gameHeight, 32), "Doodle Jump (not really)", sf::Style::Titlebar | sf::Style::Close);
-
-    // ddl::run(window, 60, 2);
+    ddl::run(window, 60, 1);
   }
   catch (const std::exception & e)
   {
