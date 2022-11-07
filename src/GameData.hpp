@@ -18,20 +18,15 @@ namespace ddl
     template< typename T >
     std::shared_ptr< T > instantiate(T&& object);
 
+    template< typename T >
+    void instantiate(std::shared_ptr< T >& object);
+
     using Renderables = Storage< std::weak_ptr< IRenderable > >;
     using Updatables = Storage< std::weak_ptr< IUpdatable > >;
 
     Updatables updatables;
     Renderables renderables;
   };
-
-  struct GameTextures
-  {
-  public:
-    sf::Texture doodler;
-    sf::Texture platform;
-  };
-  GameTextures loadTextures();
 }
 
 template< typename T>
@@ -47,6 +42,19 @@ std::shared_ptr< T > ddl::GameData::instantiate(T&& object)
     updatables.push_front(result);
   }
   return result;
+}
+
+template< typename T >
+void ddl::GameData::instantiate(std::shared_ptr< T >& object)
+{
+  if constexpr(std::is_base_of< IRenderable, T >::value)
+  {
+    renderables.push_front(object);
+  }
+  if constexpr(std::is_base_of< IUpdatable, T >::value)
+  {
+    updatables.push_front(object);
+  }
 }
 
 #endif
