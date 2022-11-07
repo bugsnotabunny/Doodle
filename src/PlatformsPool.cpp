@@ -11,15 +11,17 @@ namespace
   const long long epsilon = 1000;
 }
 
-void ddl::IPlatform::update(float)
-{}
+ddl::PlatformsPool ddl::PlatformsPool::produce(GameData& data)
+{
+  PlatformsPool result(data);
+  result.shiftPlatforms(0);
+  return result;
+}
 
 ddl::PlatformsPool::PlatformsPool(GameData& data):
   data_(data),
   storage_()
-{
-  shiftPlatforms(0);
-}
+{}
 
 namespace
 {
@@ -28,7 +30,7 @@ namespace
     return std::pow(10, precision);
   }
 
-  using IPlatPtrT = std::shared_ptr< ddl::IPlatform >;
+  using IPlatPtrT = std::shared_ptr< ddl::Platform >;
   bool intersectsLowerHigherBorders(const IPlatPtrT plat, const sf::Rect< float >& doodlerRect)
   {
     return plat->getGlobalBounds().intersects(doodlerRect);
@@ -55,33 +57,35 @@ namespace
       }
     }
   }
-
-  void generatePlatformsWithAverageHOf(long long int height, std::forward_list< IPlatPtrT >& storage)
-  {
-    using ddl::Random;
-
-    unsigned char platsNum = 0;
-    {
-      Random< unsigned char > rndPlatCount{minPlats, maxPlats, static_cast< int >(std::time(0))};
-      platsNum = rndPlatCount.get();
-    }
-
-    Random< long long int > rndY{(height - epsilon) * precMaker(), (height + epsilon) * precMaker(), static_cast< int >(std::time(0))};
-    Random< long long int > rndX{0, ddl::gameWidth * precMaker(), static_cast< int >(std::time(0))};
-    for (unsigned char i = 0; i < platsNum; ++i)
-    {
-      const float y = static_cast< float >(rndY.get()) / precMaker();
-      const float x = static_cast< float >(rndX.get()) / precMaker();
-
-      auto plat = ddl::getRandomTypePlatform();
-      plat->setPosition({x, y});
-      storage.push_front(std::move(plat));
-    }
-  }
 }
 
 void ddl::PlatformsPool::shiftPlatforms(float height)
 {
   deleteOutdated(storage_);
-  generatePlatformsWithAverageHOf(height, storage_);
+  generatePlatformsWithAverageHOf(height);
+}
+
+void ddl::PlatformsPool::generatePlatformsWithAverageHOf(long long int height)
+{
+  using ddl::Random;
+
+  unsigned char platsNum = 0;
+  {
+    Random< unsigned char > rndPlatCount{minPlats, maxPlats, static_cast< int >(std::time(0))};
+    platsNum = rndPlatCount.get();
+  }
+
+  Random< long long int > rndY{(height - epsilon) * precMaker(), (height + epsilon) * precMaker(), static_cast< int >(std::time(0))};
+  Random< long long int > rndX{0, ddl::gameWidth * precMaker(), static_cast< int >(std::time(0))};
+  for (unsigned char i = 0; i < platsNum; ++i)
+  {
+    const float y = static_cast< float >(rndY.get()) / precMaker();
+    const float x = static_cast< float >(rndX.get()) / precMaker();
+
+    auto plat = ddl::getRandomTypePlatform();
+    plat->setPosition({x, y});
+
+    storage_.push_front(std::move(plat));
+    data_.instantiate(*(storage_.begin()));
+  }
 }

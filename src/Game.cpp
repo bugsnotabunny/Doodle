@@ -10,27 +10,28 @@
 #include "Player.hpp"
 #include "GameData.hpp"
 #include "PlatformsPool.hpp"
+#include "InputTexture.hpp"
 
 namespace
 {
-  const sf::Vector2f gravity = {0, 1000};
+  const float gravity = 1000;
   const float horizontalAccelerationBase = 1000;
 }
 
-void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short updatesPerFrame)
+void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 {
   GameData data;
-  PlatformsPool platforms{data};
-  GameTextures textures = loadTextures();
+  PlatformsPool platforms = PlatformsPool::produce(data);
+  sf::Texture playerTexture = inputTexture("doodler.png");
 
-  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{textures.doodler}});
+  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{playerTexture}});
   doodler->setScale(0.5, 0.5);
   doodler->setPosition(100, 100);
   doodler->move(200, 100);
+  doodler->jump();
 
   using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
-  std::shared_ptr< AccelerationT > lrPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, 0}});
-  std::shared_ptr< AccelerationT > gravityPlayerAcceleration = data.instantiate(AccelerationT{doodler->speed, gravity});
+  std::shared_ptr< AccelerationT > playerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, gravity}});
   bool accelerateLeft = false;
   bool accelerateRight = false;
 
@@ -76,11 +77,11 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS, unsigned short
       }
     }
 
-    const float updatesFrequency = 1 / static_cast< float >(wishedFPS * updatesPerFrame);
+    const float updatesFrequency = 1 / static_cast< float >(wishedFPS);
     const float deltaTime = updateClock.getElapsedTime().asSeconds();
     if(deltaTime > updatesFrequency)
     {
-      lrPlayerAcceleration->acceleration.x = horizontalAccelerationBase * (static_cast< char >(accelerateRight) - accelerateLeft);
+      playerAcceleration->acceleration.x = horizontalAccelerationBase * (static_cast< char >(accelerateRight) - accelerateLeft);
       for(auto&& item: data.updatables)
       {
         item.lock()->update(deltaTime);

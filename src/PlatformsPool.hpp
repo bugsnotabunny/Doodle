@@ -14,12 +14,15 @@ namespace ddl
   class PlatformsPool
   {
   public:
-    PlatformsPool(GameData& data);
+    static PlatformsPool produce(GameData& data);
     bool anyIntersections(const Player& doodler);
     void shiftPlatforms(float height);
   private:
+    PlatformsPool(GameData& data);
+    void generatePlatformsWithAverageHOf(long long int height);
+
     GameData& data_;
-    std::forward_list< std::shared_ptr < IPlatform > > storage_;
+    std::forward_list< std::shared_ptr < Platform > > storage_;
   };
 }
 
