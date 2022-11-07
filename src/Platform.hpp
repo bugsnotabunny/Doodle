@@ -17,13 +17,7 @@ namespace ddl
     virtual void update(float) override;
   };
 
-  std::shared_ptr< IPlatform > getRandomPlatform(float height);
-
-  template < typename PlatformT >
-  PlatformT getPLatform(const sf::Vector2f& pos)
-  {
-    return PlatformT{pos};
-  }
+  std::shared_ptr< IPlatform > getRandomTypePlatform();
 
   class RegularPlatform: public IPlatform
   {
