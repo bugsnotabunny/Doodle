@@ -9,25 +9,18 @@
 
 namespace ddl
 {
-  class IPlatform: public RenderableObject, public IUpdatable
+  class Platform: public RenderableObject, public IUpdatable
   {
   public:
-    virtual ~IPlatform() = default;
-    virtual void onPlayerLanding() = 0;
+    Platform(const sf::Vector2f& pos);
+    virtual ~Platform() = default;
+    virtual void onPlayerLanding();
     virtual void update(float) override;
   };
 
-  std::shared_ptr< IPlatform > getRandomTypePlatform();
+  std::shared_ptr< Platform > getRandomTypePlatform();
 
-  class RegularPlatform: public IPlatform
-  {
-  public:
-    explicit RegularPlatform(const sf::Vector2f& pos);
-    virtual ~RegularPlatform() = default;
-    virtual void onPlayerLanding() override;
-  };
-
-  class BreakingPlatform: public IPlatform
+  class BreakingPlatform: public Platform
   {
   public:
     explicit BreakingPlatform(const sf::Vector2f& pos);
@@ -35,7 +28,7 @@ namespace ddl
     virtual void onPlayerLanding() override;
   };
 
-  class ShiftingPlatform: public IPlatform
+  class ShiftingPlatform: public Platform
   {
   public:
     explicit ShiftingPlatform(const sf::Vector2f& pos);
@@ -43,7 +36,7 @@ namespace ddl
     virtual void onPlayerLanding() override;
   };
 
-  class MovingPlatform: public IPlatform
+  class MovingPlatform: public Platform
   {
   public:
     explicit MovingPlatform(const sf::Vector2f& pos);
