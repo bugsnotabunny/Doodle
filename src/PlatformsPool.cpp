@@ -18,7 +18,7 @@ ddl::PlatformsPool ddl::PlatformsPool::produce(GameData& data)
   return result;
 }
 
-ddl::PlatformsPool::PlatformsPool(GameData& data):
+ddl::PlatformsPool::PlatformsPool(GameData& data) noexcept:
   data_(data),
   storage_()
 {}
@@ -43,25 +43,8 @@ bool ddl::PlatformsPool::anyIntersections(const Player& doodler)
   return std::any_of(storage_.begin(), storage_.end(), std::bind(intersectsLowerHigherBorders, _1, doodler.getGlobalBounds()));
 }
 
-namespace
-{
-  void deleteOutdated(std::forward_list< IPlatPtrT >& storage)
-  {
-    auto prev = storage.before_begin();
-    for (auto it = storage.begin(); it != storage.end(); prev = it, ++it)
-    {
-      while (it != storage.end() && (*it)->getPosition().y > ddl::gameHeight + epsilon)
-      {
-        ++it;
-        storage.erase_after(prev);
-      }
-    }
-  }
-}
-
 void ddl::PlatformsPool::shiftPlatforms(float height)
 {
-  deleteOutdated(storage_);
   generatePlatformsWithAverageHOf(height);
 }
 
@@ -88,4 +71,18 @@ void ddl::PlatformsPool::generatePlatformsWithAverageHOf(long long int height)
     storage_.push_front(std::move(plat));
     data_.instantiate(*(storage_.begin()));
   }
+}
+
+void ddl::PlatformsPool::deleteOutdated() noexcept
+{
+  auto prev = storage_.before_begin();
+  for (auto it = storage_.begin(); it != storage_.end(); prev = it, ++it)
+  {
+    while (it != storage_.end() && (*it)->getPosition().y > ddl::gameHeight + epsilon)
+    {
+      storage_.erase_after(prev);
+      ++it;
+    }
+  }
+  data_.clearDeallocated();
 }

@@ -17,8 +17,9 @@ namespace ddl
     static PlatformsPool produce(GameData& data);
     bool anyIntersections(const Player& doodler);
     void shiftPlatforms(float height);
+    void deleteOutdated() noexcept;
   private:
-    PlatformsPool(GameData& data);
+    PlatformsPool(GameData& data) noexcept;
     void generatePlatformsWithAverageHOf(long long int height);
 
     GameData& data_;
