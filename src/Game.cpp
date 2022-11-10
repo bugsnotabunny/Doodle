@@ -26,8 +26,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 
   std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{playerTexture}});
   doodler->setScale(0.5, 0.5);
-  doodler->setPosition(100, 100);
-  doodler->move(200, 100);
+  doodler->setPosition(300, 500);
   doodler->jump();
 
   using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
@@ -82,22 +81,18 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
     if(deltaTime > updatesFrequency)
     {
       playerAcceleration->acceleration.x = horizontalAccelerationBase * (static_cast< char >(accelerateRight) - accelerateLeft);
-      for(auto&& item: data.updatables)
-      {
-        item.lock()->update(deltaTime);
-      }
+      data.update(deltaTime);
 
       if (platforms.anyIntersections(*doodler))
       {
+        std::cout << doodler->getPosition().y << '\n';
         doodler->jump();
         platforms.shiftPlatforms(doodler->getPosition().y);
+        platforms.deleteOutdated();
       }
 
       window.clear();
-      for(auto&& item: data.renderables)
-      {
-        item.lock()->render(window);
-      }
+      data.render(window);
       window.display();
 
       updateClock.restart();
