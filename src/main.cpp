@@ -10,7 +10,7 @@ int main()
   {
     sf::RenderWindow window{};
     window.create(sf::VideoMode(ddl::gameWidth, ddl::gameHeight, 32), "Doodle Jump (not really)", sf::Style::Titlebar | sf::Style::Close);
-    ddl::run(window, 60);
+    ddl::run(window, 120);
   }
   catch (const std::exception & e)
   {
