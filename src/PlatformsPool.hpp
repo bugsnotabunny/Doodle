@@ -7,6 +7,7 @@
 #include "Platform.hpp"
 #include "IUpdatable.hpp"
 #include "GameData.hpp"
+#include "MathFunc.hpp"
 #include "Player.hpp"
 
 namespace ddl
@@ -24,6 +25,9 @@ namespace ddl
 
     GameData& data_;
     std::forward_list< std::shared_ptr < Platform > > storage_;
+    float lastGenerated;
+    Random< unsigned char > rndPlatCount_;
+    Random< long long int > rndX_;
   };
 }
 

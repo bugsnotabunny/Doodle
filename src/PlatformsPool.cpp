@@ -5,10 +5,10 @@
 
 namespace
 {
-  const size_t minPlats = 2;
-  const size_t maxPlats = 5;
+  const size_t minPlats = 1;
+  const size_t maxPlats = 3;
   const size_t precision = 2;
-  const long long epsilon = 1000;
+  const long long epsilon = 100;
 }
 
 ddl::PlatformsPool ddl::PlatformsPool::produce(GameData& data)
@@ -20,16 +20,14 @@ ddl::PlatformsPool ddl::PlatformsPool::produce(GameData& data)
 
 ddl::PlatformsPool::PlatformsPool(GameData& data) noexcept:
   data_(data),
-  storage_()
+  storage_(),
+  lastGenerated(2 * epsilon),
+  rndPlatCount_(minPlats, maxPlats, static_cast< int >(std::time(0))),
+  rndX_(0, ddl::gameWidth, static_cast< int >(std::time(0)))
 {}
 
 namespace
 {
-  constexpr long precMaker() noexcept
-  {
-    return std::pow(10, precision);
-  }
-
   using IPlatPtrT = std::shared_ptr< ddl::Platform >;
   bool intersectsLowerHigherBorders(const IPlatPtrT plat, const sf::Rect< float >& doodlerRect)
   {
@@ -45,25 +43,24 @@ bool ddl::PlatformsPool::anyIntersections(const Player& doodler)
 
 void ddl::PlatformsPool::shiftPlatforms(float height)
 {
-  generatePlatformsWithAverageHOf(height);
+  if (lastGenerated - epsilon > height)
+  {
+    generatePlatformsWithAverageHOf(height);
+    lastGenerated = height + epsilon / 2;
+  }
 }
 
 void ddl::PlatformsPool::generatePlatformsWithAverageHOf(long long int height)
 {
   using ddl::Random;
 
-  unsigned char platsNum = 0;
-  {
-    Random< unsigned char > rndPlatCount{minPlats, maxPlats, static_cast< int >(std::time(0))};
-    platsNum = rndPlatCount.get();
-  }
+  unsigned char platsNum = rndPlatCount_.get();
+  Random< long long int > rndY{(height - epsilon), (height + epsilon), static_cast< int >(std::time(0))};
 
-  Random< long long int > rndY{(height - epsilon) * precMaker(), (height + epsilon) * precMaker(), static_cast< int >(std::time(0))};
-  Random< long long int > rndX{0, ddl::gameWidth * precMaker(), static_cast< int >(std::time(0))};
   for (unsigned char i = 0; i < platsNum; ++i)
   {
-    const float y = static_cast< float >(rndY.get()) / precMaker();
-    const float x = static_cast< float >(rndX.get()) / precMaker();
+    const float y = static_cast< float >(rndY.get());
+    const float x = static_cast< float >(rndX_.get());
 
     auto plat = ddl::getRandomTypePlatform();
     plat->setPosition({x, y});
@@ -74,15 +71,4 @@ void ddl::PlatformsPool::generatePlatformsWithAverageHOf(long long int height)
 }
 
 void ddl::PlatformsPool::deleteOutdated() noexcept
-{
-  auto prev = storage_.before_begin();
-  for (auto it = storage_.begin(); it != storage_.end(); prev = it, ++it)
-  {
-    while (it != storage_.end() && (*it)->getPosition().y > ddl::gameHeight + epsilon)
-    {
-      storage_.erase_after(prev);
-      ++it;
-    }
-  }
-  data_.clearDeallocated();
-}
+{}
