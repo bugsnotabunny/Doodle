@@ -37,7 +37,7 @@ namespace ddl
 template< typename T>
 std::shared_ptr< T > ddl::GameData::instantiate(T&& object)
 {
-  auto result = std::make_shared< T >(object);
+  auto result = std::make_shared< T >(std::move(object));
   if constexpr(std::is_base_of< IRenderable, T >::value)
   {
     renderables_.push_front(result);

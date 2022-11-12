@@ -11,7 +11,7 @@ namespace
   IterT findBeforeFreed(IterT beforeBegin, IterT end) noexcept
   {
     auto prev = beforeBegin;
-    for (auto it = beforeBegin++; it != end; ++prev, ++it)
+    for (auto it = beforeBegin++; it != end; prev = it, ++it)
     {
       if (it->expired())
       {
@@ -30,16 +30,17 @@ namespace
     }
     for (auto it = findBeforeFreed(arr.before_begin(), arr.end()); it != arr.end(); it = findBeforeFreed(it, arr.end()))
     {
+      if (it == arr.end())
+      {
+        return;
+      }
       arr.erase_after(it);
     }
   }
 }
 
 void ddl::GameData::clearDeallocated() noexcept
-{
-  clearDeallocatedImpl(updatables_);
-  clearDeallocatedImpl(renderables_);
-}
+{}
 
 void ddl::GameData::update(float deltaTime)
 {
