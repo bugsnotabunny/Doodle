@@ -12,27 +12,16 @@
 #include "PlatformsPool.hpp"
 #include "InputTexture.hpp"
 
-namespace
-{
-  const float gravity = 1000;
-  const float horizontalAccelerationBase = 1000;
-}
-
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 {
+  sf::View view(sf::FloatRect(0.f, -600, gameWidth, gameHeight));
+  window.setView(view);
+
   GameData data;
   PlatformsPool platforms = PlatformsPool::produce(data);
-  sf::Texture playerTexture = inputTexture("doodler.png");
 
-  std::shared_ptr< Player > doodler = data.instantiate(Player{sf::Sprite{playerTexture}});
-  doodler->setScale(0.5, 0.5);
-  doodler->setPosition(300, 500);
+  std::shared_ptr< Player > doodler = data.instantiate(Player{{gameWidth / 2, 0}});
   doodler->jump();
-
-  using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
-  std::shared_ptr< AccelerationT > playerAcceleration = data.instantiate(AccelerationT{doodler->speed, {0, gravity}});
-  bool accelerateLeft = false;
-  bool accelerateRight = false;
 
   sf::Clock updateClock;
   while(window.isOpen())
@@ -46,31 +35,30 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
       case sf::Event::Closed:
         window.close();
         break;
-      case sf::Event::KeyPressed:
+      case sf::Event::KeyReleased:
         switch (event.key.code)
         {
         case sf::Keyboard::Left:
-          accelerateLeft = true;
-          break;
         case sf::Keyboard::Right:
-          accelerateRight = true;
+          doodler->setMoveDirection(Stop);
           break;
         default:
           break;
         }
         break;
-      case sf::Event::KeyReleased:
+      case sf::Event::KeyPressed:
         switch (event.key.code)
         {
         case sf::Keyboard::Left:
-          accelerateLeft = false;
+          doodler->setMoveDirection(Left);
           break;
         case sf::Keyboard::Right:
-          accelerateRight = false;
+          doodler->setMoveDirection(Right);
           break;
         default:
           break;
         }
+        break;
       default:
         break;
       }
@@ -80,14 +68,13 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
     const float deltaTime = updateClock.getElapsedTime().asSeconds();
     if(deltaTime > updatesFrequency)
     {
-      playerAcceleration->acceleration.x = horizontalAccelerationBase * (static_cast< char >(accelerateRight) - accelerateLeft);
       data.update(deltaTime);
+      view.move(0, -0);
 
       if (platforms.anyIntersections(*doodler))
       {
-        std::cout << doodler->getPosition().y << '\n';
         doodler->jump();
-        platforms.shiftPlatforms(doodler->getPosition().y);
+        platforms.shiftPlatforms(doodler->getPosition().y - gameHeight / 2);
         platforms.deleteOutdated();
       }
 
