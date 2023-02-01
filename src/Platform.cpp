@@ -16,9 +16,9 @@ namespace
   }
 }
 
-std::shared_ptr< ddl::Platform > ddl::getRandomTypePlatform()
+std::unique_ptr< ddl::Platform > ddl::getRandomTypePlatform()
 {
-  return std::make_shared< Platform >(getPLatform< Platform >({0, 0}));
+  return std::make_unique< Platform >(getPLatform< Platform >({0, 0}));
 }
 
 namespace

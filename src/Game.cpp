@@ -18,10 +18,10 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
   window.setView(view);
 
   GameData data;
-  PlatformsPool platforms = PlatformsPool::produce(data);
+  PlatformsPool platforms = PlatformsPool::produce();
+  Player doodler{sf::Vector2f{gameWidth / 2, 0}};
 
-  std::shared_ptr< Player > doodler = data.instantiate(Player{{gameWidth / 2, 0}});
-  doodler->jump();
+  doodler.jump();
 
   sf::Clock updateClock;
   while(window.isOpen())
@@ -40,7 +40,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         {
         case sf::Keyboard::Left:
         case sf::Keyboard::Right:
-          doodler->setMoveDirection(Stop);
+          doodler.setMoveDirection(Stop);
           break;
         default:
           break;
@@ -50,10 +50,10 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         switch (event.key.code)
         {
         case sf::Keyboard::Left:
-          doodler->setMoveDirection(Left);
+          doodler.setMoveDirection(Left);
           break;
         case sf::Keyboard::Right:
-          doodler->setMoveDirection(Right);
+          doodler.setMoveDirection(Right);
           break;
         default:
           break;
@@ -69,17 +69,25 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
     if(deltaTime > updatesFrequency)
     {
       data.update(deltaTime);
+      platforms.update(deltaTime);
+      doodler.update(deltaTime);
+
       view.move(0, -0);
 
-      if (platforms.anyIntersections(*doodler))
+      auto intersectionStatus = platforms.anyIntersections(doodler);
+      if (intersectionStatus.hasIntersected)
       {
-        doodler->jump();
-        platforms.shiftPlatforms(doodler->getPosition().y - gameHeight / 2);
-        platforms.deleteOutdated();
+        doodler.jump();
+        if (intersectionStatus.isInNewBank)
+        {
+          platforms.onNewBankVisit();
+        }
       }
 
       window.clear();
       data.render(window);
+      doodler.render(window);
+      platforms.render(window);
       window.display();
 
       updateClock.restart();
