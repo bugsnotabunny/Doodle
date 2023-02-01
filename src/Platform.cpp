@@ -25,7 +25,7 @@ namespace
 {
   namespace PlatformDetail
   {
-    const sf::Texture texture = ddl::inputTexture("platform.png");
+    const sf::Texture TEXTURE = ddl::inputTexture("platform.png");
   }
 }
 
@@ -33,7 +33,7 @@ void ddl::Platform::update(float)
 {}
 
 ddl::Platform::Platform(const sf::Vector2f& pos):
-  RenderableObject(sf::Sprite{PlatformDetail::texture})
+  RenderableObject(sf::Sprite{PlatformDetail::TEXTURE})
 {
   setPosition(pos);
 }
