@@ -5,7 +5,7 @@
 
 #include "MathFunc.hpp"
 #include "Game.hpp"
-#include "InputTexture.hpp"
+#include "AssetsLoad.hpp"
 
 namespace
 {

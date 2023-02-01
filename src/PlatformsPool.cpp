@@ -149,7 +149,6 @@ void ddl::PlatformsPool::onNewBankVisit()
   std::random_device rd;
   std::mt19937 gen(rd());
   distr_t platsNumRnd(MIN_PLATS, MAX_PLATS);
-
   ++newBankVisitsCount_;
   const size_t visitsCount = getNewBankVisitsCount();
   auto newBank = PlatformsBank::produce(

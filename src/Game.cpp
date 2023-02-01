@@ -10,18 +10,24 @@
 #include "Player.hpp"
 #include "GameData.hpp"
 #include "PlatformsPool.hpp"
-#include "InputTexture.hpp"
+#include "AssetsLoad.hpp"
 
 namespace
 {
-  const float VIEW_MOVE_SPEED = -3;
-  const float VIEW_MOVE_OFFSET = -200;
+  const sf::Font MERCHANT_COPY = ddl::inputFont("merchant_copy.ttf");
+  const float VIEW_MOVE_SPEED = -500;
+  const float VIEW_MOVE_OFFSET = 100;
 }
 
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 {
   sf::View view(sf::FloatRect(0.f, -600, gameWidth, gameHeight));
   window.setView(view);
+
+  sf::Text scoreText;
+  scoreText.setFont(MERCHANT_COPY);
+  scoreText.setCharacterSize(100);
+  scoreText.setStyle(sf::Text::Regular);
 
   GameData data;
   PlatformsPool platforms = PlatformsPool::produce();
@@ -85,12 +91,15 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         if (intersectionStatus.isInNewBank)
         {
           platforms.onNewBankVisit();
+          const size_t score = platforms.getNewBankVisitsCount();
+          scoreText.setString(std::to_string(score));
         }
       }
 
       if (view.getCenter().y + VIEW_MOVE_OFFSET > doodler.getPosition().y)
       {
-        view.move(0, VIEW_MOVE_SPEED);
+        view.move(0, VIEW_MOVE_SPEED * deltaTime);
+        scoreText.move(0, VIEW_MOVE_SPEED * deltaTime);
         window.setView(view);
       }
 
@@ -98,6 +107,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
       data.render(window);
       doodler.render(window);
       platforms.render(window);
+      window.draw(scoreText);
       window.display();
 
       updateClock.restart();

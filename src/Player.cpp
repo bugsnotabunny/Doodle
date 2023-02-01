@@ -3,7 +3,7 @@
 #include <functional>
 #include <utility>
 
-#include "InputTexture.hpp"
+#include "AssetsLoad.hpp"
 
 namespace
 {
