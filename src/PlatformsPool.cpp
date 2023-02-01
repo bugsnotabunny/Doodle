@@ -11,15 +11,15 @@
 
 namespace
 {
-  const size_t BANKS_PER_SCREEN = 2;
+  const size_t BANKS_PER_SCREEN = 4;
   const size_t BANKS_LOWER_THAN_SCREEN = 0;
-  const size_t BANKS_HIGHER_THAN_SCREEN = 1;
+  const size_t BANKS_HIGHER_THAN_SCREEN = 2;
 
   const float BANK_H = ddl::gameHeight / BANKS_PER_SCREEN;
   const float BANK_W = ddl::gameWidth;
 
   const size_t MIN_PLATS = 1;
-  const size_t MAX_PLATS = 5;
+  const size_t MAX_PLATS = 3;
 }
 
 ddl::PlatformsPool::PlatformsBank ddl::PlatformsPool::PlatformsBank::produce(sf::Vector2f cords, sf::Vector2f size, size_t platsAmount)
@@ -39,11 +39,12 @@ ddl::PlatformsPool::PlatformsBank ddl::PlatformsPool::PlatformsBank::produce(sf:
     platforms.push_back(std::move(plat));
   }
 
-  return PlatformsBank{std::move(platforms)};
+  return PlatformsBank{std::move(platforms), cords};
 }
 
-ddl::PlatformsPool::PlatformsBank::PlatformsBank(std::vector< std::shared_ptr < Platform > >&& platforms) noexcept:
-  platforms_(platforms)
+ddl::PlatformsPool::PlatformsBank::PlatformsBank(std::vector< std::shared_ptr < Platform > >&& platforms, sf::Vector2f cords) noexcept:
+  platforms_(platforms),
+  cords_(cords)
 {}
 
 void ddl::PlatformsPool::PlatformsBank::update(float deltaTime)
@@ -89,7 +90,7 @@ ddl::PlatformsPool ddl::PlatformsPool::produce()
   for (int i = -BANKS_LOWER_THAN_SCREEN; i < static_cast< int >(BANKS_PER_SCREEN + BANKS_HIGHER_THAN_SCREEN); ++i)
   {
     PlatformsBank bank = PlatformsBank::produce(sf::Vector2f{0, - i * BANK_H}, sf::Vector2f{BANK_W, BANK_H}, platsNumRnd(gen));
-    banks.push_back(std::move(bank));
+    banks.emplace_back(std::move(bank));
   }
 
   return PlatformsPool{std::move(banks)};
@@ -97,12 +98,20 @@ ddl::PlatformsPool ddl::PlatformsPool::produce()
 
 ddl::PlatformsPool::IntersectionStatus ddl::PlatformsPool::anyIntersections(const Player& player) const
 {
+  struct IntersectsWithPlayer
+  {
+    const Player& player;
+
+    bool operator()(const PlatformsBank& bank) const
+    {
+      return bank.anyIntersections(player);
+    }
+  };
+
   IntersectionStatus result{false, false};
   result.hasIntersected = banks_.begin()->anyIntersections(player);
-  result.isInNewBank = !result.hasIntersected;
-  if (result.isInNewBank)
-  {
-    result.hasIntersected = (++banks_.begin())->anyIntersections(player);
+  if (!result.hasIntersected) {
+    result.hasIntersected = std::any_of(++banks_.begin(), banks_.end(), IntersectsWithPlayer{player});
     result.isInNewBank = result.hasIntersected;
   }
   return result;
@@ -125,7 +134,8 @@ void ddl::PlatformsPool::render(sf::RenderWindow& window) const
 }
 
 ddl::PlatformsPool::PlatformsPool(std::deque< PlatformsBank >&& banks) noexcept:
-  banks_(banks)
+  newBankVisitsCount_(0),
+  banks_(std::move(banks))
 {}
 
 size_t ddl::PlatformsPool::getNewBankVisitsCount() const noexcept
@@ -139,8 +149,14 @@ void ddl::PlatformsPool::onNewBankVisit()
   std::random_device rd;
   std::mt19937 gen(rd());
   distr_t platsNumRnd(MIN_PLATS, MAX_PLATS);
+
+  ++newBankVisitsCount_;
   const size_t visitsCount = getNewBankVisitsCount();
-  auto newBank = PlatformsBank::produce(sf::Vector2f{0, visitsCount * BANK_H}, sf::Vector2f{BANK_W, BANK_H}, platsNumRnd(gen));
+  auto newBank = PlatformsBank::produce(
+    sf::Vector2f{0, - BANK_H * (visitsCount + BANKS_PER_SCREEN + BANKS_HIGHER_THAN_SCREEN)},
+    sf::Vector2f{BANK_W, BANK_H},
+    platsNumRnd(gen)
+  );
 
   banks_.pop_front();
   banks_.push_back(std::move(newBank));

@@ -47,8 +47,9 @@ namespace ddl
       void update(float deltaTime);
       void render(sf::RenderWindow & window) const;
     private:
-      PlatformsBank(std::vector< std::shared_ptr < Platform > >&& platforms) noexcept;
+      PlatformsBank(std::vector< std::shared_ptr < Platform > >&& platforms, sf::Vector2f cords) noexcept;
       std::vector< std::shared_ptr < Platform > > platforms_;
+      sf::Vector2f cords_;
     };
     PlatformsPool(std::deque< PlatformsBank >&& banks) noexcept;
 
