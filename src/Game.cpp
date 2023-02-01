@@ -12,6 +12,12 @@
 #include "PlatformsPool.hpp"
 #include "InputTexture.hpp"
 
+namespace
+{
+  const float VIEW_MOVE_SPEED = -3;
+  const float VIEW_MOVE_OFFSET = -200;
+}
+
 void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 {
   sf::View view(sf::FloatRect(0.f, -600, gameWidth, gameHeight));
@@ -72,8 +78,6 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
       platforms.update(deltaTime);
       doodler.update(deltaTime);
 
-      view.move(0, -0);
-
       auto intersectionStatus = platforms.anyIntersections(doodler);
       if (intersectionStatus.hasIntersected)
       {
@@ -82,6 +86,12 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         {
           platforms.onNewBankVisit();
         }
+      }
+
+      if (view.getCenter().y + VIEW_MOVE_OFFSET > doodler.getPosition().y)
+      {
+        view.move(0, VIEW_MOVE_SPEED);
+        window.setView(view);
       }
 
       window.clear();
