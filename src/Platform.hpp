@@ -18,7 +18,7 @@ namespace ddl
     virtual void update(float) override;
   };
 
-  std::shared_ptr< Platform > getRandomTypePlatform();
+  std::unique_ptr< Platform > getRandomTypePlatform();
 
   class BreakingPlatform: public Platform
   {

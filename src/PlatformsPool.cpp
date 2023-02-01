@@ -1,74 +1,147 @@
 #include "PlatformsPool.hpp"
 
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <functional>
+
 #include "MathFunc.hpp"
+#include "RenderableObject.hpp"
 #include "Game.hpp"
 
 namespace
 {
-  const size_t minPlats = 1;
-  const size_t maxPlats = 3;
-  const size_t precision = 2;
-  const long long epsilon = 100;
+  const size_t BANKS_PER_SCREEN = 3;
+  const size_t BANKS_LOWER_THAN_SCREEN = 0;
+  const size_t BANKS_HIGHER_THAN_SCREEN = 1;
+
+  const float BANK_H = ddl::gameHeight / BANKS_PER_SCREEN;
+  const float BANK_W = ddl::gameWidth;
+
+  const size_t MIN_PLATS = 1;
+  const size_t MAX_PLATS = 5;
 }
 
-ddl::PlatformsPool ddl::PlatformsPool::produce(GameData& data)
+ddl::PlatformsPool::PlatformsBank ddl::PlatformsPool::PlatformsBank::produce(sf::Vector2f cords, sf::Vector2f size, size_t platsAmount)
 {
-  PlatformsPool result(data);
-  result.shiftPlatforms(0);
+  std::vector< std::shared_ptr < Platform > > platforms;
+
+  using distr_t = std::uniform_real_distribution< float >;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  distr_t distX(cords.x, size.x + cords.x);
+  distr_t distY(cords.y, size.y + cords.y);
+
+  for (size_t i = 0; i < platsAmount; ++i)
+  {
+    std::shared_ptr< Platform > plat = getRandomTypePlatform();
+    plat->setPosition(sf::Vector2f{distX(gen), distY(gen)});
+    platforms.emplace_back(std::move(plat));
+  }
+
+  return PlatformsBank{std::move(platforms)};
+}
+
+ddl::PlatformsPool::PlatformsBank::PlatformsBank(std::vector< std::shared_ptr < Platform > >&& platforms) noexcept:
+  platforms_(platforms)
+{}
+
+void ddl::PlatformsPool::PlatformsBank::update(float deltaTime)
+{
+  for (auto&& plat: platforms_)
+  {
+    plat->update(deltaTime);
+  }
+}
+
+void ddl::PlatformsPool::PlatformsBank::render(sf::RenderWindow& window) const
+{
+  for (auto&& plat: platforms_)
+  {
+    plat->render(window);
+  }
+}
+
+bool ddl::PlatformsPool::PlatformsBank::anyIntersections(const Player& player) const
+{
+  struct PlayerIsLandedOn
+  {
+    const Player& player;
+
+    bool operator()(const std::shared_ptr< Platform >& plat) const
+    {
+      return player.isLandedOn(*plat);
+    }
+  };
+
+  return std::any_of(platforms_.begin(), platforms_.end(), PlayerIsLandedOn{player});
+}
+
+ddl::PlatformsPool ddl::PlatformsPool::produce()
+{
+  std::deque< PlatformsBank > banks;
+
+  using distr_t = std::uniform_int_distribution< size_t >;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  distr_t platsNumRnd(MIN_PLATS, MAX_PLATS);
+
+  for (int i = -BANKS_LOWER_THAN_SCREEN; i < static_cast< int >(BANKS_PER_SCREEN + BANKS_HIGHER_THAN_SCREEN); ++i)
+  {
+    PlatformsBank bank = PlatformsBank::produce(sf::Vector2f{0, i * BANK_H}, sf::Vector2f{BANK_W, BANK_H}, platsNumRnd(gen));
+    banks.push_back(std::move(bank));
+  }
+
+  return PlatformsPool{std::move(banks)};
+}
+
+ddl::PlatformsPool::IntersectionStatus ddl::PlatformsPool::anyIntersections(const Player& player) const
+{
+  IntersectionStatus result{false, false};
+  result.hasIntersected = banks_.begin()->anyIntersections(player);
+  result.isInNewBank = !result.hasIntersected;
+  if (result.isInNewBank)
+  {
+    result.hasIntersected = (++banks_.begin())->anyIntersections(player);
+    result.isInNewBank = result.hasIntersected;
+  }
   return result;
 }
 
-ddl::PlatformsPool::PlatformsPool(GameData& data) noexcept:
-  data_(data),
-  storage_(),
-  lastGenerated(2 * epsilon),
-  rndPlatCount_(minPlats, maxPlats, static_cast< int >(std::time(0))),
-  rndX_(0, ddl::gameWidth, static_cast< int >(std::time(0)))
+void ddl::PlatformsPool::update(const float deltaTime)
+{
+  for (auto&& bank: banks_)
+  {
+    bank.update(deltaTime);
+  }
+}
+
+void ddl::PlatformsPool::render(sf::RenderWindow& window) const
+{
+  for (auto&& bank: banks_)
+  {
+    bank.render(window);
+  }
+}
+
+ddl::PlatformsPool::PlatformsPool(std::deque< PlatformsBank >&& banks) noexcept:
+  banks_(banks)
 {}
 
-namespace
+size_t ddl::PlatformsPool::getNewBankVisitsCount() const noexcept
 {
-  using IPlatPtrT = std::shared_ptr< ddl::Platform >;
-  bool intersectsLowerHigherBorders(const IPlatPtrT plat, const sf::Rect< float >& doodlerRect)
-  {
-    return plat->getGlobalBounds().intersects(doodlerRect);
-  }
+  return newBankVisitsCount_;
 }
 
-bool ddl::PlatformsPool::anyIntersections(const Player& doodler)
+void ddl::PlatformsPool::onNewBankVisit()
 {
-  using namespace std::placeholders;
-  return std::any_of(storage_.begin(), storage_.end(), std::bind(intersectsLowerHigherBorders, _1, doodler.getGlobalBounds()));
+  using distr_t = std::uniform_int_distribution< size_t >;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  distr_t platsNumRnd(MIN_PLATS, MAX_PLATS);
+  const size_t visitsCount = getNewBankVisitsCount();
+  auto newBank = PlatformsBank::produce(sf::Vector2f{0, visitsCount * BANK_H}, sf::Vector2f{BANK_W, BANK_H}, platsNumRnd(gen));
+
+  banks_.pop_front();
+  banks_.push_back(std::move(newBank));
 }
-
-void ddl::PlatformsPool::shiftPlatforms(float height)
-{
-  if (lastGenerated - epsilon > height)
-  {
-    generatePlatformsWithAverageHOf(height);
-    lastGenerated = height + epsilon / 2;
-  }
-}
-
-void ddl::PlatformsPool::generatePlatformsWithAverageHOf(long long int height)
-{
-  using ddl::Random;
-
-  unsigned char platsNum = rndPlatCount_.get();
-  Random< long long int > rndY{(height - epsilon), (height + epsilon), static_cast< int >(std::time(0))};
-
-  for (unsigned char i = 0; i < platsNum; ++i)
-  {
-    const float y = static_cast< float >(rndY.get());
-    const float x = static_cast< float >(rndX_.get());
-
-    auto plat = ddl::getRandomTypePlatform();
-    plat->setPosition({x, y});
-
-    storage_.push_front(std::move(plat));
-    data_.instantiate(*(storage_.begin()));
-  }
-}
-
-void ddl::PlatformsPool::deleteOutdated() noexcept
-{}
