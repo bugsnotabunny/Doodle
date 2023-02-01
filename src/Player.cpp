@@ -12,9 +12,9 @@ namespace
   const float LEGS_HIT_BOX_H = 30;
 
   const sf::Vector2f PLAYER_SPEED_LIMIT = {5000, 10000};
-  const sf::Vector2f JUMP_SPEED = {0, -900};
+  const sf::Vector2f JUMP_SPEED = {0, -700};
 
-  const float GRAVITY = 1000;
+  const float GRAVITY = 600;
   const float HORIZINTAL_ACCELERATION_BASE = 1000;
 }
 

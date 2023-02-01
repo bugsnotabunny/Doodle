@@ -19,7 +19,7 @@ namespace
   const float BANK_W = ddl::gameWidth;
 
   const size_t MIN_PLATS = 1;
-  const size_t MAX_PLATS = 3;
+  const size_t MAX_PLATS = 2;
 }
 
 ddl::PlatformsPool::PlatformsBank ddl::PlatformsPool::PlatformsBank::produce(sf::Vector2f cords, sf::Vector2f size, size_t platsAmount)
