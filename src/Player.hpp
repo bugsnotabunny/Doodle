@@ -6,6 +6,7 @@
 #include "RenderableObject.hpp"
 #include "Acceleration.hpp"
 #include "LimitedVector.hpp"
+#include "Platform.hpp"
 
 namespace ddl
 {
@@ -27,9 +28,10 @@ namespace ddl
     void jump() noexcept;
     void setMoveDirection(Direction xAccelerationDirection) noexcept;
 
+    bool isLandedOn(const Platform& plat) const;
   private:
     using AccelerationT = Acceleration< LimitedVector< float >, sf::Vector2f >;
-    LimitedVector< float > speed;
+    LimitedVector< float > speed_;
     sf::Vector2f acceleration_;
     Direction xAccelerationDirection_;
   };
