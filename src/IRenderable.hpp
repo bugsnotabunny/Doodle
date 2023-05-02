@@ -5,12 +5,12 @@
 
 namespace ddl
 {
-    class IRenderable
-    {
-    public:
-        virtual ~IRenderable() = default;
-        virtual void render(sf::RenderWindow & window) const = 0;
-    };
+  class IRenderable
+  {
+   public:
+    virtual ~IRenderable() = default;
+    virtual void render(sf::RenderWindow & window) const = 0;
+  };
 }
 
 #endif

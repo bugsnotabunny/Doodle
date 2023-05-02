@@ -7,7 +7,7 @@
 
 namespace ddl
 {
-  float getVectorAbs(const sf::Vector2f& vector) noexcept;
+  float getVectorAbs(const sf::Vector2f & vector) noexcept;
 }
 
 #endif

@@ -10,24 +10,26 @@ namespace ddl
   template < typename SpeedT, typename AccelerationT >
   class Acceleration: public IUpdatable
   {
-  public:
-    Acceleration(SpeedT& speedref, const AccelerationT& acceleration);
-    Acceleration(const Acceleration&) = default;
-    Acceleration(Acceleration&&) = default;
+   public:
+    Acceleration(SpeedT & speedref, const AccelerationT & acceleration);
+    Acceleration(const Acceleration &) = default;
+    Acceleration(Acceleration &&) = default;
 
-    Acceleration& operator=(const Acceleration&) = default;
+    Acceleration & operator=(const Acceleration &) = default;
 
-    const SpeedT& getSpeed() const noexcept;
+    const SpeedT & getSpeed() const noexcept;
 
     virtual void update(float deltaTime) override;
     AccelerationT acceleration;
-  private:
-    SpeedT& speed_;
+
+   private:
+    SpeedT & speed_;
   };
 }
 
 template < typename SpeedT, typename AccelerationT >
-ddl::Acceleration< SpeedT, AccelerationT >::Acceleration(SpeedT& speedref, const AccelerationT& acceleration):
+ddl::Acceleration< SpeedT, AccelerationT >::Acceleration(SpeedT & speedref,
+ const AccelerationT & acceleration):
   acceleration(acceleration),
   speed_(speedref)
 {}
@@ -39,10 +41,9 @@ void ddl::Acceleration< SpeedT, AccelerationT >::update(float deltaTime)
 }
 
 template < typename SpeedT, typename AccelerationT >
-const SpeedT& ddl::Acceleration< SpeedT, AccelerationT >::getSpeed() const noexcept
+const SpeedT & ddl::Acceleration< SpeedT, AccelerationT >::getSpeed() const noexcept
 {
   return speed_;
 }
-
 
 #endif

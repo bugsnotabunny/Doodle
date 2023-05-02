@@ -6,8 +6,8 @@
 
 namespace ddl
 {
-  sf::Texture inputTexture(const std::string& source);
-  sf::Font inputFont(const std::string& source);
+  sf::Texture inputTexture(const std::string & source);
+  sf::Font inputFont(const std::string & source);
 }
 
 #endif

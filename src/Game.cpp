@@ -11,6 +11,7 @@
 #include "GameData.hpp"
 #include "PlatformsPool.hpp"
 #include "AssetsLoad.hpp"
+#include "Movement.hpp"
 
 namespace
 {
@@ -19,7 +20,7 @@ namespace
   const float VIEW_MOVE_OFFSET = 100;
 }
 
-void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
+void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
 {
   sf::View view(sf::FloatRect(0.f, -600, gameWidth, gameHeight));
   window.setView(view);
@@ -31,12 +32,12 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 
   GameData data;
   PlatformsPool platforms = PlatformsPool::produce();
-  Player doodler{sf::Vector2f{gameWidth / 2, 0}};
+  Player doodler{ sf::Vector2f{ gameWidth / 2, 0 } };
 
   doodler.jump();
 
   sf::Clock updateClock;
-  while(window.isOpen())
+  while (window.isOpen())
   {
     sf::Event event;
     while (window.pollEvent(event))
@@ -52,7 +53,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         {
         case sf::Keyboard::Left:
         case sf::Keyboard::Right:
-          doodler.setMoveDirection(Stop);
+          doodler.setMoveDirection(Direction::Stop);
           break;
         default:
           break;
@@ -62,10 +63,10 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
         switch (event.key.code)
         {
         case sf::Keyboard::Left:
-          doodler.setMoveDirection(Left);
+          doodler.setMoveDirection(Direction::Left);
           break;
         case sf::Keyboard::Right:
-          doodler.setMoveDirection(Right);
+          doodler.setMoveDirection(Direction::Right);
           break;
         default:
           break;
@@ -78,7 +79,7 @@ void ddl::run(sf::RenderWindow& window, unsigned short wishedFPS)
 
     const float updatesFrequency = 1 / static_cast< float >(wishedFPS);
     const float deltaTime = updateClock.getElapsedTime().asSeconds();
-    if(deltaTime > updatesFrequency)
+    if (deltaTime > updatesFrequency)
     {
       data.update(deltaTime);
       platforms.update(deltaTime);
