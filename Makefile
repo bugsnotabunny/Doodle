@@ -1,19 +1,28 @@
-CC = g++
+CXX  = g++
 ODIR = out
 SDIR = src
+IDIR = include
 
-LIBS = -lsfml-graphics -lsfml-window -lsfml-system
+INCLUDE = -I$(IDIR)
+WARNINGS = -Wall -Wextra -Wold-style-cast
+CXXFLAGS = -g -std=c++17 $(WARNINGS) $(INCLUDE)
 
-CXXFLAGS = -g -Wall -Wextra -Wold-style-cast -std=c++17
-_OBJS = $(wildcard $(SDIR)/*.cpp)
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-$(ODIR)/%.o: $(SDIR)/%.cpp
+
+SRCS = $(wildcard $(SDIR)/*.cpp)
+HDRS = $(wildcard $(IDIR)/*.hpp)
+OBJS = $(SRCS:%.cpp=%.o)
+DEPS = $(OBJS:%.o=%.d)
+
+doodle.exe : $(OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+
+$(ODIR)/% : $(SDIR)/%.cpp
 	$(CC) $(CXXFLAGS) -c -o $@ $< $(CFLAGS)
 
-.PHONY: all
+-include $(DEPS)
 
-all: $(patsubst $(SDIR)/%.cpp,$(ODIR)/%.o,$(_OBJS))
-	$(CC) $(CXXFLAGS) -o main.exe $(ODIR)/*.o $(LIBS)
-
-clean:
-	rm -f $(ODIR)/*.o main.exe
+.PHONY : clean
+clean : 
+	-rm $(DEPS) $(OBJS) doodle.exe

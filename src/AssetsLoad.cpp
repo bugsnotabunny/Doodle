@@ -2,8 +2,7 @@
 
 #include <iostream>
 
-namespace
-{
+namespace {
   static const std::string assetsFolder = "bin/assets/";
   static const std::string spritesFolder = "sprites/";
   static const std::string fontsFolder = "fonts/";
