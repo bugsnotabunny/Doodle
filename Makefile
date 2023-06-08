@@ -10,8 +10,7 @@ CXXFLAGS = -g -std=c++17 $(WARNINGS) $(INCLUDE)
 
 LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
-SRCS = $(wildcard $(SDIR)/*.cpp)
-HDRS = $(wildcard $(IDIR)/*.hpp)
+SRCS = $(shell find . -name "*.cpp")
 OBJS = $(SRCS:%.cpp=%.o)
 DEPS = $(OBJS:%.o=%.d)
 
@@ -24,11 +23,11 @@ $(ODIR)/% : $(SDIR)/%.cpp
 -include $(DEPS)
 
 .PHONY : clean compile-commands
-clean : 
+clean :
 	-rm $(DEPS) $(OBJS) $(EXE)
 
 compile-commands :
-	make clean	
+	make clean
 	bear -- make $(EXE)
 
 all : $(EXE)
