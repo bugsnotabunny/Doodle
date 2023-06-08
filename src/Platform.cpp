@@ -37,13 +37,23 @@ namespace
      chooseRandom(speedLimits),
      chooseRandom(accelerations) } };
   }
+
+  std::unique_ptr< ddl::Platform > getShiftingPlatform(const sf::Vector2f & pos)
+  {
+    static const std::vector< float > shifts = { ddl::gameWidth / 4,
+      ddl::gameWidth / 4 * 2,
+      -ddl::gameWidth / 4,
+      -ddl::gameWidth / 4 * 2 };
+    return std::unique_ptr< ddl::Platform >{ new ddl::ShiftingPlatform{ pos,
+     chooseRandom(shifts) } };
+  }
 }
 
 std::unique_ptr< ddl::Platform > ddl::getRandomTypePlatform(const sf::Vector2f & cords)
 {
   static const std::vector< std::unique_ptr< Platform > (*)(const sf::Vector2f &) > factories = {
     getPlatform< Platform >,
-    // getPLatform< ShiftingPlatform >,
+    getShiftingPlatform,
     // getPLatform< BreakingPlatform >,
     getMovingPlatform,
   };

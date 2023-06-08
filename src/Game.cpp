@@ -84,12 +84,12 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
 
     platforms.update(deltaTime);
     doodler.update(deltaTime);
-
-    auto intersectionStatus = platforms.anyIntersections(doodler);
-    if (intersectionStatus.hasIntersected)
+    auto intersection = platforms.intersection(doodler);
+    if (intersection.intersection.has_value())
     {
       doodler.jump();
-      if (intersectionStatus.isInNewBank)
+      intersection.intersection.value().get().onPlayerLanding();
+      if (intersection.isInNewBank)
       {
         platforms.onNewBankVisit();
         const size_t score = platforms.getNewBankVisitsCount();

@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <memory>
+#include <optional>
 
 #include "Platform.hpp"
 #include "IUpdatable.hpp"
@@ -23,10 +24,11 @@ namespace ddl
 
     struct IntersectionStatus
     {
-      bool hasIntersected;
+      std::optional< std::reference_wrapper< Platform > > intersection;
       bool isInNewBank;
     };
-    IntersectionStatus anyIntersections(const Player & player) const;
+
+    IntersectionStatus intersection(const Player & player) const;
     void onNewBankVisit();
     void onPlayerLanding(Platform & plat);
     size_t getNewBankVisitsCount() const noexcept;
@@ -40,10 +42,11 @@ namespace ddl
      public:
       PlatformsBank(const PlatformsBank &) = default;
       PlatformsBank(PlatformsBank &&) noexcept = default;
-      ~PlatformsBank() = default;
+      ~PlatformsBank() noexcept = default;
 
       static PlatformsBank produce(sf::Vector2f cords, const sf::Vector2f size, size_t platsAmount);
-      bool anyIntersections(const Player & doodler) const;
+      std::optional< std::reference_wrapper< Platform > > intersection(
+       const Player & doodler) const;
 
       void update(float deltaTime);
       void render(sf::RenderWindow & window) const;

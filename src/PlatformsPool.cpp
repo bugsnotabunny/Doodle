@@ -4,6 +4,7 @@
 #include <memory>
 #include <algorithm>
 #include <functional>
+#include <optional>
 
 #include "MathFunc.hpp"
 #include "RenderableObject.hpp"
@@ -67,19 +68,17 @@ void ddl::PlatformsPool::PlatformsBank::render(sf::RenderWindow & window) const
   }
 }
 
-bool ddl::PlatformsPool::PlatformsBank::anyIntersections(const Player & player) const
+std::optional< std::reference_wrapper< ddl::Platform > > ddl::PlatformsPool::PlatformsBank::
+ intersection(const Player & player) const
 {
-  struct PlayerIsLandedOn
+  for (auto it = platforms_.begin(); it != platforms_.end(); ++it)
   {
-    const Player & player;
-
-    bool operator()(const std::shared_ptr< Platform > & plat) const
+    if (*it != nullptr && player.isLandedOn(**it))
     {
-      return player.isLandedOn(*plat);
+      return std::ref(**it);
     }
-  };
-
-  return std::any_of(platforms_.begin(), platforms_.end(), PlayerIsLandedOn{ player });
+  }
+  return std::optional< std::reference_wrapper< ddl::Platform > >{};
 }
 
 ddl::PlatformsPool ddl::PlatformsPool::produce()
@@ -104,28 +103,15 @@ ddl::PlatformsPool ddl::PlatformsPool::produce()
   return PlatformsPool{ std::move(banks) };
 }
 
-ddl::PlatformsPool::IntersectionStatus ddl::PlatformsPool::anyIntersections(
- const Player & player) const
+ddl::PlatformsPool::IntersectionStatus ddl::PlatformsPool::intersection(const Player & player) const
 {
-  struct IntersectsWithPlayer
+  auto intersection = banks_.begin()->intersection(player);
+  const bool isInNewChunk = !intersection.has_value();
+  for (auto it = ++banks_.begin(); !intersection.has_value() && it != banks_.end(); ++it)
   {
-    const Player & player;
-
-    bool operator()(const PlatformsBank & bank) const
-    {
-      return bank.anyIntersections(player);
-    }
-  };
-
-  IntersectionStatus result{ false, false };
-  result.hasIntersected = banks_.begin()->anyIntersections(player);
-  if (!result.hasIntersected)
-  {
-    result.hasIntersected =
-     std::any_of(++banks_.begin(), banks_.end(), IntersectsWithPlayer{ player });
-    result.isInNewBank = result.hasIntersected;
+    intersection = it->intersection(player);
   }
-  return result;
+  return { intersection, isInNewChunk };
 }
 
 void ddl::PlatformsPool::update(const float deltaTime)

@@ -17,7 +17,7 @@ namespace ddl
     virtual ~Platform() = default;
     virtual std::shared_ptr< Platform > produce(const sf::Vector2f & pos);
     virtual void onPlayerLanding();
-    virtual void update(float) override;
+    virtual void update(float deltaTime) override;
 
    protected:
     Platform(const sf::Vector2f & pos, const sf::Texture & texture);
@@ -36,9 +36,15 @@ namespace ddl
   class ShiftingPlatform: public Platform
   {
    public:
-    explicit ShiftingPlatform(const sf::Vector2f & pos);
+    explicit ShiftingPlatform(const sf::Vector2f & pos, float shift);
     virtual ~ShiftingPlatform() = default;
+    virtual void update(float deltaTime) override;
     virtual void onPlayerLanding() override;
+
+   private:
+    float nextShift_;
+    sf::Vector2f shiftTo_;
+    Movement movement_;
   };
 
   class MovingPlatform: public Platform
