@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <functional>
 #include <optional>
+#include <random>
 
-#include "MathFunc.hpp"
 #include "RenderableObject.hpp"
 #include "Game.hpp"
 
