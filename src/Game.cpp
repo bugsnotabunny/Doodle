@@ -2,13 +2,14 @@
 
 #include <SFML/System/Vector2.hpp>
 
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include <type_traits>
 #include <map>
 #include <functional>
 
 #include "Player.hpp"
-#include "GameData.hpp"
 #include "PlatformsPool.hpp"
 #include "AssetsLoad.hpp"
 #include "Movement.hpp"
@@ -30,9 +31,8 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
   scoreText.setCharacterSize(100);
   scoreText.setStyle(sf::Text::Regular);
 
-  GameData data;
   PlatformsPool platforms = PlatformsPool::produce();
-  Player doodler{ sf::Vector2f{ static_cast<float>(gameWidth) / 2, 0 } };
+  Player doodler{ sf::Vector2f{ static_cast< float >(gameWidth) / 2, 0 } };
 
   doodler.jump();
 
@@ -42,7 +42,7 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
     sf::Event event;
     while (window.pollEvent(event))
     {
-      // ! redo with std::map later maybe
+      // TODO: redo with std::map later maybe
       switch (event.type)
       {
       case sf::Event::Closed:
@@ -78,39 +78,37 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
     }
 
     const float updatesFrequency = 1 / static_cast< float >(wishedFPS);
+    std::this_thread::sleep_for(
+     std::chrono::milliseconds(static_cast< uint32_t >(updatesFrequency * 1000)));
     const float deltaTime = updateClock.getElapsedTime().asSeconds();
-    if (deltaTime > updatesFrequency)
+
+    platforms.update(deltaTime);
+    doodler.update(deltaTime);
+
+    auto intersectionStatus = platforms.anyIntersections(doodler);
+    if (intersectionStatus.hasIntersected)
     {
-      data.update(deltaTime);
-      platforms.update(deltaTime);
-      doodler.update(deltaTime);
-
-      auto intersectionStatus = platforms.anyIntersections(doodler);
-      if (intersectionStatus.hasIntersected)
+      doodler.jump();
+      if (intersectionStatus.isInNewBank)
       {
-        doodler.jump();
-        if (intersectionStatus.isInNewBank)
-        {
-          platforms.onNewBankVisit();
-          const size_t score = platforms.getNewBankVisitsCount();
-          scoreText.setString(std::to_string(score));
-        }
+        platforms.onNewBankVisit();
+        const size_t score = platforms.getNewBankVisitsCount();
+        scoreText.setString(std::to_string(score));
       }
-
-      if (view.getCenter().y + VIEW_MOVE_OFFSET > doodler.getPosition().y)
-      {
-        view.move(0, VIEW_MOVE_SPEED * deltaTime);
-        scoreText.move(0, VIEW_MOVE_SPEED * deltaTime);
-        window.setView(view);
-      }
-
-      window.clear();
-      data.render(window);
-      doodler.render(window);
-      platforms.render(window);
-      window.draw(scoreText);
-      window.display();
-updateClock.restart();
     }
+
+    if (view.getCenter().y + VIEW_MOVE_OFFSET > doodler.getPosition().y)
+    {
+      view.move(0, VIEW_MOVE_SPEED * deltaTime);
+      scoreText.move(0, VIEW_MOVE_SPEED * deltaTime);
+      window.setView(view);
+    }
+
+    window.clear();
+    doodler.render(window);
+    platforms.render(window);
+    window.draw(scoreText);
+    window.display();
+    updateClock.restart();
   }
 }

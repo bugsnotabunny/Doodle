@@ -85,6 +85,9 @@
     "semaphore": "cpp",
     "stop_token": "cpp",
     "thread": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "charconv": "cpp",
+    "format": "cpp",
+    "span": "cpp"
   }
 }

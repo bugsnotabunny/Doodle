@@ -23,7 +23,6 @@ namespace ddl
     template < typename T >
     void instantiate(std::shared_ptr< T > & object);
 
-    void clearDeallocated() noexcept;
     void update(float deltaTime);
     void render(sf::RenderWindow & window);
 
