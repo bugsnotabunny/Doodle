@@ -7,7 +7,6 @@
 
 #include "Platform.hpp"
 #include "IUpdatable.hpp"
-#include "GameData.hpp"
 #include "Player.hpp"
 
 namespace ddl
