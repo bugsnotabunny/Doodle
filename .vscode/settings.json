@@ -1,6 +1,20 @@
 {
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "files.exclude": {
+    "src/*.o": true,
+    ".cache": true,
+    "src/*.d": true,
+    "compile_commands.json": true,
+    "*.plist":true
+  },
+  "makefile.launchConfigurations": [
+    {
+      "cwd": "/home/banan/doodle",
+      "binaryPath": "/home/banan/doodle/main.exe",
+      "binaryArgs": []
+    }
+  ],
   "files.associations": {
     "*.sh": "shellscript",
     "array": "cpp",
@@ -72,12 +86,5 @@
     "stop_token": "cpp",
     "thread": "cpp",
     "valarray": "cpp"
-  },
-  "makefile.launchConfigurations": [
-    {
-      "cwd": "/home/banan/doodle",
-      "binaryPath": "/home/banan/doodle/main.exe",
-      "binaryArgs": []
-    }
-  ]
+  }
 }

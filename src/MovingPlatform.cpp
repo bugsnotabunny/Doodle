@@ -19,11 +19,11 @@ ddl::MovingPlatform::MovingPlatform(const sf::Vector2f & pos,
 
 void ddl::MovingPlatform::update(float deltaTime)
 {
-  if (getPosition().x - startingPos_.x > shift_)
-  {
+  //if (getPosition().x - startingPos_.x > shift_)
+  //{
     sf::Vector2f accelerationVal = movement_.getAcceleration();
     accelerationVal.x *= -1;
     movement_.setAccelerationValue(accelerationVal);
-  }
+  //}
   movement_.update(deltaTime);
 }

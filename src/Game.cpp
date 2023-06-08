@@ -32,7 +32,7 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
 
   GameData data;
   PlatformsPool platforms = PlatformsPool::produce();
-  Player doodler{ sf::Vector2f{ gameWidth / 2, 0 } };
+  Player doodler{ sf::Vector2f{ static_cast<float>(gameWidth) / 2, 0 } };
 
   doodler.jump();
 
@@ -110,8 +110,7 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
       platforms.render(window);
       window.draw(scoreText);
       window.display();
-
-      updateClock.restart();
+updateClock.restart();
     }
   }
 }
