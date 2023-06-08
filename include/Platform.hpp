@@ -17,6 +17,7 @@ namespace ddl
     virtual ~Platform() = default;
     virtual std::shared_ptr< Platform > produce(const sf::Vector2f & pos);
     virtual void onPlayerLanding();
+    virtual bool isLandable() const;
     virtual void update(float deltaTime) override;
 
    protected:
@@ -30,7 +31,11 @@ namespace ddl
    public:
     explicit BreakingPlatform(const sf::Vector2f & pos);
     virtual ~BreakingPlatform() = default;
+    virtual bool isLandable() const override;
     virtual void onPlayerLanding() override;
+
+   private:
+    bool isBroken_;
   };
 
   class ShiftingPlatform: public Platform

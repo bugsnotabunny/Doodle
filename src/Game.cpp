@@ -87,8 +87,12 @@ void ddl::run(sf::RenderWindow & window, unsigned short wishedFPS)
     auto intersection = platforms.intersection(doodler);
     if (intersection.intersection.has_value())
     {
-      doodler.jump();
-      intersection.intersection.value().get().onPlayerLanding();
+      auto && plat = intersection.intersection.value().get();
+      if (plat.isLandable())
+      {
+        doodler.jump();
+        intersection.intersection.value().get().onPlayerLanding();
+      }
       if (intersection.isInNewBank)
       {
         platforms.onNewBankVisit();
